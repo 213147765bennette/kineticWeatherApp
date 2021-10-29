@@ -1,6 +1,7 @@
 package com.example.globalkinetic.ui.home
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -18,6 +19,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.globalkinetic.MainActivity
 import com.example.globalkinetic.R
 import com.example.globalkinetic.ui.adapter.ForecastAdapter
 import com.example.globalkinetic.ui.forecast.MoreForecastInfo
@@ -37,13 +39,15 @@ class HomeFragment : Fragment() , ForecastAdapter.RecycleViewItemClickInterface 
 
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var forecastAdapter: ForecastAdapter
-    //private var fiveForecastResponse:List<FiveForecastResponse> = listOf()
     private var fiveForecastResponse:List<FiveForecastResponse.Cod> = listOf()
     lateinit var fivedaysList:List<FiveForecastResponse.Cod>
-    //private lateinit var recylerView: RecyclerView
     lateinit var  root:View
     private lateinit var cityForecastResponse: FiveForecastResponse.City
-    //private lateinit var cordinatorLayout:ScrollView
+    private  lateinit var alertDialogBuilder: AlertDialog.Builder
+
+    private lateinit var txtBigCurrentTemp:TextView
+    private lateinit var btn_refresh_weather: TextView
+    private lateinit var mainActivity: MainActivity
 
     private val linearLayoutManager: LinearLayoutManager by lazy {
         LinearLayoutManager(context)
@@ -63,13 +67,43 @@ class HomeFragment : Fragment() , ForecastAdapter.RecycleViewItemClickInterface 
         root  = inflater.inflate(R.layout.fragment_home, container, false)
 
         val textView: TextView = root.findViewById(R.id.text_home)
+
+        observers(root)
+
+        btn_refresh_weather.setOnClickListener {
+
+            Log.d(TAG,"====== Refresh button is clicked =============")
+            observers(root)
+            Log.d(TAG, "=========== Observing the Live data ==========")
+            showProgressDialog()
+
+        }
+
+        //fiveForecastResponse = ArrayList()
+        fiveForecastResponse = ArrayList()
+
+        forecastAdapter = ForecastAdapter(fiveForecastResponse,this)
+
+        homeViewModel.text.observe(viewLifecycleOwner, Observer {
+            textView.text = it
+        })
+
+
+
+        return root
+    }
+
+    fun observers(root:View){
+
         //temperature, description,temp_min,temp_max
         val txtBigCurrentTemp: TextView = root.findViewById(R.id.txtCurrent_big_temp)
         val txtDescription: TextView = root.findViewById(R.id.txxMain_description)
         val txtTempMin: TextView = root.findViewById(R.id.txt_min_value)
         val txtSmallCurrentTemp: TextView = root.findViewById(R.id.txt_current_value)
         val txtTempMax: TextView = root.findViewById(R.id.txt_max_value)
+        btn_refresh_weather = root.findViewById(R.id.btn_refresh_weather)
         //cordinatorLayout = root.findViewById(R.id.main_layout)
+        alertDialogBuilder = AlertDialog.Builder(context)
 
         //to use to change background images and colours : layoutImage  weather_cardview recyclerView
         val layoutImage: LinearLayout = root.findViewById<LinearLayout>(R.id.weather_image)
@@ -77,87 +111,89 @@ class HomeFragment : Fragment() , ForecastAdapter.RecycleViewItemClickInterface 
 
         val recyclerView: RecyclerView = root.findViewById(R.id.rv_fivedays_forecast)
 
-
-        //fiveForecastResponse = ArrayList()
-        fiveForecastResponse = ArrayList()
-
-
-        forecastAdapter = ForecastAdapter(fiveForecastResponse,this)
-
         //used to observe the top current temperature
-        homeViewModel.currentTopWeatherLive.observe(viewLifecycleOwner, Observer {
+        homeViewModel.currentTopWeatherLive.observe(viewLifecycleOwner, {
 
-            //change backgground here
-            //layoutImage  weather_cardview recyclerView
-            if(it.weather.get(0).main.equals("Clouds")){
+            //showProgressDialog()
 
-                Log.d(TAG,"===========CLOUDS============")
-                layoutImage.setBackgroundResource(R.drawable.sea_cloudy)
-                weather_cardview.setCardBackgroundColor(Color.parseColor("#54717A"))
-                recyclerView.setBackgroundColor(resources.getColor(R.color.cloudy))
-
-            }else if (it.weather.get(0).main.equals("Clear")){
-
-                Log.d(TAG,"===========CLEAR============")
-                layoutImage.setBackgroundResource(R.drawable.sea_sunnypng)
-                //weather_cardview.setCardBackgroundColor(R.color.sunny)
-                recyclerView.setBackgroundColor(resources.getColor(R.color.weather_blue))
-                weather_cardview.setCardBackgroundColor(Color.parseColor("#4c94e3"))
-
-            }else if (it.weather.get(0).main.equals("Sunny")){
-
-                Log.d(TAG,"===========CLEAR============")
-                layoutImage.setBackgroundResource(R.drawable.sea_sunnypng)
-                //weather_cardview.setCardBackgroundColor(R.color.sunny)
-                recyclerView.setBackgroundColor(resources.getColor(R.color.weather_blue))
-                weather_cardview.setCardBackgroundColor(Color.parseColor("#4c94e3"))
-
-            }
-            else if (it.weather.get(0).main.equals("Rain")){
-
-                Log.d(TAG,"===========RAIN============")
-                layoutImage.setBackgroundResource(R.drawable.sea_rainy)
-                //weather_cardview.setBackgroundColor(resources.getColor(R.color.rainy) )
-                recyclerView.setBackgroundColor(resources.getColor(R.color.rainy))
-                weather_cardview.setCardBackgroundColor(Color.parseColor("#57575D"))
-
+            if(it ==null){
+                showProgressDialog()
             }else{
-                layoutImage.setBackgroundResource(R.drawable.sea_sunnypng)
-                //weather_cardview.setCardBackgroundColor(R.color.sunny)
-                recyclerView.setBackgroundColor(resources.getColor(R.color.weather_blue))
-                weather_cardview.setCardBackgroundColor(Color.parseColor("#4c94e3"))
+                alertDialogBuilder.setCancelable(true)
+
+                //change backgground here
+                //layoutImage  weather_cardview recyclerView
+                if(it.weather.get(0).main.equals("Clouds")){
+
+                    Log.d(TAG,"===========CLOUDS============")
+                    layoutImage.setBackgroundResource(R.drawable.sea_cloudy)
+                    weather_cardview.setCardBackgroundColor(Color.parseColor("#54717A"))
+                    recyclerView.setBackgroundColor(resources.getColor(R.color.cloudy))
+
+                }else if (it.weather.get(0).main.equals("Clear")){
+
+                    Log.d(TAG,"===========CLEAR============")
+                    layoutImage.setBackgroundResource(R.drawable.sea_sunnypng)
+                    //weather_cardview.setCardBackgroundColor(R.color.sunny)
+                    recyclerView.setBackgroundColor(resources.getColor(R.color.weather_blue))
+                    weather_cardview.setCardBackgroundColor(Color.parseColor("#4c94e3"))
+
+                }else if (it.weather.get(0).main.equals("Sunny")){
+
+                    Log.d(TAG,"===========CLEAR============")
+                    layoutImage.setBackgroundResource(R.drawable.sea_sunnypng)
+                    //weather_cardview.setCardBackgroundColor(R.color.sunny)
+                    recyclerView.setBackgroundColor(resources.getColor(R.color.weather_blue))
+                    weather_cardview.setCardBackgroundColor(Color.parseColor("#4c94e3"))
+
+                }
+                else if (it.weather.get(0).main.equals("Rain")){
+
+                    Log.d(TAG,"===========RAIN============")
+                    layoutImage.setBackgroundResource(R.drawable.sea_rainy)
+                    //weather_cardview.setBackgroundColor(resources.getColor(R.color.rainy) )
+                    recyclerView.setBackgroundColor(resources.getColor(R.color.rainy))
+                    weather_cardview.setCardBackgroundColor(Color.parseColor("#57575D"))
+
+                }else{
+                    showProgressDialog()
+                    layoutImage.setBackgroundResource(R.drawable.sea_sunnypng)
+                    //weather_cardview.setCardBackgroundColor(R.color.sunny)
+                    recyclerView.setBackgroundColor(resources.getColor(R.color.weather_blue))
+                    weather_cardview.setCardBackgroundColor(Color.parseColor("#4c94e3"))
+                }
+
+
+                val bigTemperature: String = convertToOneDegit(it.main.temp)
+                txtBigCurrentTemp.text = bigTemperature + "\u2103"
+
+                txtDescription.text = it.weather.get(0).main
+
+                val tempMin: String = convertToOneDegit(it.main.tempMin)
+                txtTempMin.text = tempMin +"\u2103"
+
+                val tempSmall: String = convertToOneDegit(it.main.temp)
+                txtSmallCurrentTemp.text = tempSmall + "\u2103"
+
+                val tempMaxi: String = convertToOneDegit(it.main.tempMax)
+                txtTempMax.text = tempMaxi + "\u2103"
+
+                Log.d(TAG,"VIEW_CURRENT: $it")
             }
 
-
-            val bigTemperature: String = convertToOneDegit(it.main.temp)
-            txtBigCurrentTemp.text = bigTemperature + "\u2103"
-
-            txtDescription.text = it.weather.get(0).main
-
-            val tempMin: String = convertToOneDegit(it.main.tempMin)
-            txtTempMin.text = tempMin +"\u2103"
-
-            val tempSmall: String = convertToOneDegit(it.main.temp)
-            txtSmallCurrentTemp.text = tempSmall + "\u2103"
-
-            val tempMaxi: String = convertToOneDegit(it.main.tempMax)
-            txtTempMax.text = tempMaxi + "\u2103"
-
-            Log.d(TAG,"VIEW_CURRENT: $it")
 
 
         })
 
 
         //getting live five days forecast data and setting them on my adapter
-        homeViewModel.fivedaysForcastWeatherLive.observe(viewLifecycleOwner, Observer {
+        homeViewModel.fivedaysForcastWeatherLive.observe(viewLifecycleOwner, {
 
             val fiveForecastResponse: FiveForecastResponse = it
             cityForecastResponse = fiveForecastResponse.city
             Log.d(TAG,"CITY_OBJECT: $cityForecastResponse")
 
             val forecast:List<FiveForecastResponse> = listOf(fiveForecastResponse)
-
 
 
             fivedaysList = it.list
@@ -182,16 +218,31 @@ class HomeFragment : Fragment() , ForecastAdapter.RecycleViewItemClickInterface 
 
             }
 
-        })
 
-        homeViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
         })
 
 
-        return root
     }
 
+
+
+    fun showProgressDialog(){
+        Log.d(TAG,"======= Showing alert dialog ==========")
+        alertDialogBuilder = AlertDialog.Builder(context)
+
+        alertDialogBuilder.setTitle("Please wait...")
+        alertDialogBuilder.setMessage("We are getting latest weather details, kindly wait....")
+        //alertDialogBuilder.setCancelable(true)
+        alertDialogBuilder.setNegativeButton("Ok"){dialog,w ->
+            run {
+                dialog.dismiss()
+                dialog.cancel()
+
+            }
+        }
+        alertDialogBuilder.show()
+
+    }
 
     //using this function to convert the temperature to one decimal value
     fun convertToOneDegit(digtValue:Double):String{
@@ -215,7 +266,7 @@ class HomeFragment : Fragment() , ForecastAdapter.RecycleViewItemClickInterface 
 
         //Toast.makeText(context,"POSITION CLICKED: ${position}",Toast.LENGTH_LONG).show()
 
-        var dateTimeText:String = getWeekdays(data.dtTxt)
+        val dateTimeText:String = getWeekdays(data.dtTxt)
 
 
         val intent = Intent(activity, MoreForecastInfo::class.java)

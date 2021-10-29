@@ -1,5 +1,6 @@
 package com.example.globalkinetic.ui.home
 
+import android.app.AlertDialog
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -37,9 +38,9 @@ class HomeViewModel : ViewModel() {
 
         currentTaskRepository = TaskRepository(Networking.currentWeatherRetriever(WeatherApis.BASE_URL))
 
-        //handle if the user current lat lng values are null use the default ones
-        var lat = -26.0209
-        var lon=28.1995
+        //handle if the user current lat lng values are null use the default ones, for the app to not crush
+        val lat = -26.0209
+        val lon=28.1995
 
         //call function to get current weather using Users current lat and lon
         if(MainActivity.latitude.toString() != "" && MainActivity.longitude.toString() != ""){

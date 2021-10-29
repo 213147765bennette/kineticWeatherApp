@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     companion object{
         private val TAG = "MainActivity"
         var MY_PERMISSION_REQUEST_LOCATION:Int = 88
-        //This are only to make sure that my app dose not crush if google dose not find the lat and long
+        //This are only to make sure that my app dose not crush if google dose not find the lat and long from my current location
         var  latitude:Double = -26.0209
         var longitude:Double = 28.1995
 

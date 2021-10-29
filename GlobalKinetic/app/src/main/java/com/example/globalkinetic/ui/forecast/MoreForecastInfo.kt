@@ -1,16 +1,20 @@
 package com.example.globalkinetic.ui.forecast
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.afollestad.materialdialogs.MaterialDialog
+import com.example.globalkinetic.MainActivity
 import com.example.globalkinetic.R
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import java.text.DecimalFormat
@@ -41,6 +45,8 @@ class MoreForecastInfo : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_more_forecast_info)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
         title = "More Details"
 
         init()
@@ -141,5 +147,14 @@ class MoreForecastInfo : AppCompatActivity() {
     }
 
 
+    override fun onBackPressed() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == android.R.id.home){onBackPressed()}
+        return super.onOptionsItemSelected(item)
+    }
 
 }

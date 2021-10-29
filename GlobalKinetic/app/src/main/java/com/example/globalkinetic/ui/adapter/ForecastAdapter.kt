@@ -25,7 +25,8 @@ import java.util.*
  * created by {Bennette Molepo} on {10/27/2021}.
  */
 
-class ForecastAdapter(var forecast: List<FiveForecastResponse.Cod>, var clicklisner:RecycleViewItemClickInterface): RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>() {
+class ForecastAdapter(var forecast: List<FiveForecastResponse.Cod>, var clicklisner:RecycleViewItemClickInterface):
+        RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>() {
 
     companion object{
         private val TAG = "ForecastAdapter"
@@ -125,18 +126,14 @@ class ForecastAdapter(var forecast: List<FiveForecastResponse.Cod>, var clicklis
 
             Log.d(TAG,"ICON_TEXT: $iconText")
 
-
-            //will have to inflate different layout based on the weather main value
-
-
-
-
-            //weatherIcon.text = data.weather.get(0).main
             // weather.setImageResource(R.drawable.clear)
             var covertedTemp:String = convertToOneDegit(data.main.temp)
             temperature.text = covertedTemp +"\u2103"
 
 
+            itemView.setOnClickListener {
+                action.onItemClick(data,adapterPosition)
+            }
 
 
         }
@@ -183,12 +180,7 @@ class ForecastAdapter(var forecast: List<FiveForecastResponse.Cod>, var clicklis
                 val formatter: DateFormat = SimpleDateFormat("EEEE", Locale.ENGLISH)
 
                 return formatter.format(cal.time)
-/*
 
-            var inputFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
-            var outputFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH)
-
-            return LocalDate.parse(digtValue,inputFormat).format(outputFormat)*/
         }
 
 
